@@ -3,25 +3,30 @@ const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 require('dotenv').config()
 const app = express()
-const port = 3001
+const port = 3002
 
 app.use(bodyParser.json())
 
 mongoose.connect(process.env.MONGODB_URI).then(() => console.log("Connected to MongoDB")).catch(err => console.error("MongoDB connection error: ", err));
 
-const UserSchema = new mongoose.Schema({
-    name: String,
-    email: String
+const TaskSchema = new mongoose.Schema({
+    title: String,
+    description: String,
+    userId: String,
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 });
 
-const User = mongoose.model('User', UserSchema);
+const Task = mongoose.model('Task', TaskSchema);
 
-app.post('/users', async (req,res) => {
-    const {name, email} = req.body;
+app.post('/tasks', async (req,res) => {
+    const {title, description, userId} = req.body;
     try{
-        const user = new User({name, email});
-        await user.save();
-        res.status(201).json(user);
+        const task = new Task({title, description, userId});
+        await task.save();
+        res.status(201).json(task);
     }
     catch (err) {
         console.error("Error saving: ", err);
@@ -29,10 +34,10 @@ app.post('/users', async (req,res) => {
     }
 })
 
-app.get('/users', async (req,res) => {
+app.get('/tasks', async (req,res) => {
     try{
-        const users = await User.find();
-        res.json(users);
+        const tasks = await Task.find();
+        res.json(tasks);
     }
     catch(err){
         console.error("Error saving: ", err);
@@ -41,5 +46,5 @@ app.get('/users', async (req,res) => {
 })
 
 app.listen(port, () => {
-    console.log(`User Service is listening on port ${port}`)
+    console.log(`Task Service is listening on port ${port}`)
 })
